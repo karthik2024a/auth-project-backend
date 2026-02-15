@@ -1,17 +1,18 @@
-# Use official OpenJDK image
+# ---------- BUILD STAGE ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# ---------- RUN STAGE ----------
 FROM eclipse-temurin:17-jdk-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy project files
-COPY . .
+# Copy jar from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Expose port
 EXPOSE 8080
 
-# Run the jar file
-CMD ["java", "-jar", "target/*.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
